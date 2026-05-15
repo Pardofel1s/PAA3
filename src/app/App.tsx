@@ -6,6 +6,7 @@ const COLS = 24;
 const ROWS = 24;
 const GHOST_DELAY = 300;     // ms between ghost moves
 const POWER_DURATION = 8000; // ms
+const MAX_PELLETS = 10;
 
 type GameState = "start" | "playing" | "paused" | "gameover";
 type Dir = [number, number];
@@ -39,7 +40,7 @@ function generateMaze(rows: number, cols: number): number[][] {
   carve(1, 1);
 
   // Open areas (like Python version)
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 30; i++) {
     const rx = Math.floor(Math.random() * (cols - 4)) + 2;
     const ry = Math.floor(Math.random() * (rows - 4)) + 2;
     for (let dy = -1; dy <= 1; dy++) {
@@ -67,12 +68,32 @@ function generateMaze(rows: number, cols: number): number[][] {
 }
 
 // ─── Initial pellets from maze ────────────────────────────────────────────────
-function getPellets(maze: number[][]): Set<string> {
-  const s = new Set<string>();
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++)
-      if (maze[r][c] === 0 || maze[r][c] === 3) s.add(`${c},${r}`);
-  return s;
+function spawnPellets(
+  maze: number[][],
+  existing: Set<string> = new Set()
+): Set<string> {
+  const pellets = new Set(existing);
+
+  const available: string[] = [];
+
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (
+        maze[y][x] !== 1 &&
+        !pellets.has(`${x},${y}`)
+      ) {
+        available.push(`${x},${y}`);
+      }
+    }
+  }
+
+  while (pellets.size < MAX_PELLETS && available.length > 0) {
+    const index = Math.floor(Math.random() * available.length);
+    const chosen = available.splice(index, 1)[0];
+    pellets.add(chosen);
+  }
+
+  return pellets;
 }
 
 // ─── BFS pathfinding (ported from Python) ────────────────────────────────────
@@ -108,6 +129,16 @@ function bfs(
   return [];
 }
 
+// ─── Player definitions ────────────────────────────────────────────────────────
+function findSafePlayerStart(maze: number[][]): [number, number] {
+  for (let y = 1; y < ROWS - 1; y++) {
+    for (let x = 1; x < COLS - 1; x++) {
+      if (maze[y][x] !== 1) return [x, y];
+    }
+  }
+  return [1, 1];
+}
+
 // ─── Ghost definitions ────────────────────────────────────────────────────────
 interface GhostData {
   name: string;
@@ -115,6 +146,7 @@ interface GhostData {
   pos: [number, number];
   mode: "CHASE" | "SCATTER" | "PATROL" | "CAGED" | "FLED";
   scatterTarget: [number, number];
+  respawnAt?: number;
 }
 
 function initGhosts(): GhostData[] {
@@ -147,6 +179,7 @@ interface State {
   player: [number, number];
   ghosts: GhostData[];
   pellets: Set<string>;
+  powerPellet: string;
   score: number;
   highScore: number;
   lives: number;
@@ -166,15 +199,17 @@ type Action =
 
 function makeInitialState(prev?: State): State {
   const maze = generateMaze(ROWS, COLS);
+  const pellets = spawnPellets(maze);
   const ghosts = initGhosts().map(g => ({
     ...g,
     pos: findSafeGhostStart(maze, g.pos)
   }));
   return {
     maze,
-    player: [1, 1],
+    player: findSafePlayerStart(maze),
     ghosts,
-    pellets: getPellets(maze),
+    pellets,
+    powerPellet: Array.from(pellets)[0],
     score: prev?.score ?? 0,
     highScore: prev?.highScore ?? 0,
     lives: 3,
@@ -216,13 +251,15 @@ function gameReducer(state: State, action: Action): State {
 
     case "START_GAME": {
       const maze = generateMaze(ROWS, COLS);
+      const pellets = spawnPellets(maze);
       const ghosts = initGhosts().map(g => ({ ...g, pos: findSafeGhostStart(maze, g.pos) }));
       return {
         ...state,
         maze,
-        player: [1, 1],
+        player: findSafePlayerStart(maze),
         ghosts,
-        pellets: getPellets(maze),
+        pellets,
+        powerPellet: Array.from(pellets)[0],
         lives: 3,
         score: 0,
         gameState: "playing",
@@ -235,13 +272,15 @@ function gameReducer(state: State, action: Action): State {
 
     case "RESTART_GAME": {
       const maze = generateMaze(ROWS, COLS);
+      const pellets = spawnPellets(maze);
       const ghosts = initGhosts().map(g => ({ ...g, pos: findSafeGhostStart(maze, g.pos) }));
       return {
         ...state,
         maze,
-        player: [1, 1],
+        player: findSafePlayerStart(maze),
         ghosts,
-        pellets: getPellets(maze),
+        pellets,
+        powerPellet: Array.from(pellets)[0],
         lives: 3,
         score: 0,
         gameState: "start",
@@ -275,19 +314,23 @@ case "MOVE_PLAYER": {
       let powerMode = state.powerMode;
       let powerEnd = state.powerEnd;
 
-      const cell = state.maze[ny][nx];
-
       if (newPellets.has(key)) {
         newPellets = new Set(newPellets);
         newPellets.delete(key);
-        if (cell === 3) {
-          // power pellet
+
+        if (key === state.powerPellet) {
           newScore += 50;
           powerMode = true;
           powerEnd = Date.now() + POWER_DURATION;
         } else {
           newScore += 10;
         }
+
+        // spawn pellet baru biar tetap 10
+        newPellets = spawnPellets(state.maze, newPellets);
+
+        const newPowerPellet =
+          Array.from(newPellets)[0];newPellets = spawnPellets(state.maze, newPellets);
       }
 
       // Check ghost collision after move
@@ -303,7 +346,7 @@ case "MOVE_PLAYER": {
             // eat ghost
             newScore += 200;
             newGhosts = newGhosts.map((gh, idx) =>
-              idx === i ? { ...gh, pos: findSafeGhostStart(state.maze, initGhosts()[idx].pos), mode: "CAGED" as const } : gh
+              idx === i ? { ...gh, pos: findSafeGhostStart(state.maze, initGhosts()[idx].pos), mode: "CAGED" as const, respawnAt: Date.now() + 3000 } : gh
             );
           } else {
             newLives -= 1;
@@ -328,6 +371,10 @@ case "MOVE_PLAYER": {
         player: newGameState === "gameover" ? state.player : resetPlayer,
         ghosts: newGhosts,
         pellets: newPellets,
+        powerPellet:
+          typeof newPowerPellet !== "undefined"
+            ? newPowerPellet
+            : state.powerPellet,
         score: newScore,
         highScore: newHighScore,
         lives: newLives,
@@ -367,7 +414,7 @@ case "MOVE_PLAYER": {
           if (stillPower) {
             newScore += 200;
             ghosts = ghosts.map((gh, idx) =>
-              idx === i ? { ...gh, pos: findSafeGhostStart(state.maze, initGhosts()[idx].pos), mode: "CAGED" as const } : gh
+              idx === i ? { ...gh, pos: findSafeGhostStart(state.maze, initGhosts()[idx].pos), mode: "CAGED" as const, respawnAt: Date.now() + 3000 } : gh
             );
           } else {
             newLives -= 1;
@@ -458,7 +505,7 @@ function PacMan({ x, y, size = 26, mouth = 0.35, dir = 0 }: {
 function MazeView({ state }: { state: State }) {
   const W = CELL * COLS;
   const H = CELL * ROWS;
-  const { maze, player, ghosts, pellets, playerDir, powerMode } = state;
+  const { maze, player, ghosts, pellets, powerPellet, playerDir, powerMode } = state;
 
   // Calculate pac-man rotation from dir
   const [dx, dy] = playerDir;
@@ -516,8 +563,10 @@ function MazeView({ state }: { state: State }) {
       <g>
         {Array.from(pellets).map(key => {
           const [kx, ky] = key.split(",").map(Number);
-          const cell = maze[ky][kx];
-          if (cell === 3) {
+          const isPowerPellet =
+            key === powerPellet;
+
+          if (isPowerPellet) {
             return (
               <circle key={key} cx={kx*CELL+CELL/2} cy={ky*CELL+CELL/2} r="6" fill="#ffffff"
                 style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.8))" }}>
