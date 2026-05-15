@@ -1,4 +1,4 @@
-# 👾 Pac-Man — Procedural Maze Edition
+# Pac-Man — Procedural Maze Edition
 
 A browser-based Pac-Man game built with **React**, **TypeScript**, and **Vite**. Setiap sesi menghasilkan labirin baru secara prosedural menggunakan algoritma *Recursive Backtracking*, sehingga pengalaman bermain selalu segar.
 
@@ -9,20 +9,20 @@ A browser-based Pac-Man game built with **React**, **TypeScript**, and **Vite**.
 
 ---
 
-## ✨ Fitur
+## Fitur
 
-- 🗺️ **Procedural maze generation** — labirin baru setiap main, dibuat dengan algoritma *Recursive Backtracking*
-- 👻 **4 Ghost dengan AI berbeda** — Blinky (Chase), Pinky (Scatter), Inky (Patrol), Clyde (Caged, dilepas saat skor ≥ 100)
-- ⚡ **Power Pellet** — makan pellet besar untuk menakuti ghost selama 8 detik
-- 🔢 **Skor & High Score** — tersimpan selama sesi berlangsung
-- ❤️ **3 nyawa** — tampil sebagai ikon Pac-Man di sidebar
-- ⏸️ **Pause / Resume** — tekan Space kapan saja
-- 🎨 **Neon arcade UI** — tema hitam & cyan dengan efek CRT scanline
-- 📐 **Responsive layout** — sidebar tersembunyi di layar kecil
+- **Procedural maze generation** — labirin baru setiap main, dibuat dengan algoritma *Recursive Backtracking*
+- **4 Ghost dengan AI berbeda** — Blinky (Chase), Pinky (Scatter), Inky (Patrol), Clyde (Caged, dilepas saat skor ≥ 100)
+- **Power Pellet** — makan pellet besar untuk menakuti ghost selama 8 detik
+- **Skor & High Score** — tersimpan selama sesi berlangsung
+- **3 nyawa** — tampil sebagai ikon Pac-Man di sidebar
+- **Pause / Resume** — tekan Space kapan saja
+- **Neon arcade UI** — tema hitam & cyan dengan efek CRT scanline
+- **Responsive layout** — sidebar tersembunyi di layar kecil
 
 ---
 
-## 🎮 Cara Main
+## Cara Main
 
 | Tombol | Aksi |
 |---|---|
@@ -36,40 +36,7 @@ A browser-based Pac-Man game built with **React**, **TypeScript**, and **Vite**.
 
 ---
 
-## 🚀 Menjalankan Secara Lokal
-
-### Prasyarat
-
-- [Node.js](https://nodejs.org/) versi **18 atau lebih baru**
-- npm (sudah termasuk bersama Node.js)
-
-### Langkah-langkah
-
-```bash
-# 1. Clone repositori
-git clone https://github.com/username/pacman-web.git
-cd pacman-web
-
-# 2. Install dependensi
-npm install
-
-# 3. Jalankan development server
-npm run dev
-```
-
-Buka browser dan akses `http://localhost:5173`.
-
-### Build untuk Produksi
-
-```bash
-npm run build
-```
-
-Hasil build tersimpan di folder `dist/` dan siap di-deploy.
-
----
-
-## 📂 Struktur Proyek
+## Struktur Proyek
 
 ```
 project/
@@ -87,60 +54,7 @@ project/
 
 ---
 
-## 🌐 Deploy
-
-### Vercel (Direkomendasikan — Paling Mudah)
-
-1. Push kode ke GitHub
-2. Buka [vercel.com](https://vercel.com) → **New Project** → import repo kamu
-3. Vercel otomatis mendeteksi Vite — klik **Deploy**
-4. Selesai! Dapat URL public gratis 🎉
-
-### Netlify
-
-1. Push kode ke GitHub
-2. Buka [netlify.com](https://netlify.com) → **Add new site** → **Import from Git**
-3. Isi pengaturan build:
-   - **Build command:** `npm run build`
-   - **Publish directory:** `dist`
-4. Klik **Deploy site**
-
-### GitHub Pages
-
-```bash
-# Install gh-pages
-npm install --save-dev gh-pages
-```
-
-Tambahkan script berikut di `package.json`:
-
-```json
-"scripts": {
-  "deploy": "gh-pages -d dist"
-}
-```
-
-Tambahkan `base` di `vite.config.ts` (ganti `nama-repo` dengan nama repo kamu):
-
-```ts
-export default defineConfig({
-  base: '/nama-repo/',
-  // ... konfigurasi lainnya
-})
-```
-
-Lalu jalankan:
-
-```bash
-npm run build
-npm run deploy
-```
-
-Aktifkan GitHub Pages di Settings → Pages → Source: `gh-pages` branch.
-
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Teknologi | Kegunaan |
 |---|---|
@@ -153,6 +67,3 @@ Aktifkan GitHub Pages di Settings → Pages → Source: `gh-pages` branch.
 
 ---
 
-## 📄 Lisensi
-
-MIT License — bebas digunakan dan dimodifikasi.
