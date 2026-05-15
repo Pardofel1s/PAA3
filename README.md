@@ -36,7 +36,7 @@ A browser-based Pac-Man game built with **React**, **TypeScript**, and **Vite**.
 
 ---
 
-## Struktur Proyek
+## Struktur Project
 
 ```
 project/
@@ -56,7 +56,7 @@ project/
 
 ## Tech Stack
 
-| Teknologi | Kegunaan |
+| Tech | Fungsi |
 |---|---|
 | React 18 | UI framework |
 | TypeScript | Type safety |
