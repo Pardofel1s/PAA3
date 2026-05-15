@@ -42,11 +42,11 @@ A browser-based Pac-Man game built with **React**, **TypeScript**, and **Vite**.
 project/
 ├── src/
 │   ├── app/
-│   │   ├── App.tsx          # Komponen utama & game logic
+│   │   ├── App.tsx         
 │   │   └── components/
-│   │       └── ui/          # Komponen UI (shadcn/ui)
-│   ├── styles/              # CSS global & Tailwind
-│   └── main.tsx             # Entry point
+│   │       └── ui/        
+│   ├── styles/          
+│   └── main.tsx      
 ├── index.html
 ├── vite.config.ts
 └── package.json
